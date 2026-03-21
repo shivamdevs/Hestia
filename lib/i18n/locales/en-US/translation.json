@@ -1,0 +1,16 @@
+{
+	"welcome": {
+		"language": {
+			"title": "Choose your language",
+			"description": "Select the language you want to use in the app.",
+			"button": "Continue",
+			"comment": "More languages coming soon!"
+		},
+		"login": {
+			"title": "Connect your account",
+			"oauth": {
+				"google": "Continue with Google"
+			}
+		}
+	}
+}
