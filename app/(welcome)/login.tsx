@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { useAuthHandler } from "@/lib/pb";
-import { cn } from "@/lib/utils";
 import { LucideLoaderCircle } from "lucide-react-native";
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -37,12 +36,10 @@ export default function LoginPage() {
 				disabled={isLoading}
 			>
 				<Icon
+					spin={isLoading}
 					icon={isLoading
 						? LucideLoaderCircle
 						: "https://hestia.dev.shivamdevs.com/_/images/oauth2/google.svg"}
-					className={cn(
-						isLoading && "animate-spin",
-					)}
 				/>
 				<Text>
 					{t("welcome.login.oauth.google")}

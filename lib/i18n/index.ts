@@ -1,8 +1,8 @@
 import { STORAGE_KEYS } from "@/constants/storage";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Localization from "expo-localization";
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+import { Storage } from "../storage";
 import translationEnIn from "./locales/en-IN/translation.json";
 import translationEnUs from "./locales/en-US/translation.json";
 
@@ -27,7 +27,7 @@ function resolveSupportedLanguage(languageTag?: string | null) {
 }
 
 const initI18n = async () => {
-	let savedLanguage = await AsyncStorage.getItem(STORAGE_KEYS.APP_LANGUAGE);
+	let savedLanguage = await Storage.getItem(STORAGE_KEYS.APP_LANGUAGE);
 
 	if (!savedLanguage) {
 		const [locale] = Localization.getLocales();

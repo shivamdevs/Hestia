@@ -28,6 +28,7 @@
 		"clsx": "^2.1.1",
 		"expo": "^55.0.8",
 		"expo-application": "~55.0.10",
+		"expo-auth-session": "~55.0.9",
 		"expo-constants": "~55.0.9",
 		"expo-crypto": "~55.0.10",
 		"expo-device": "~55.0.10",
@@ -58,6 +59,7 @@
 		"react-native-reanimated": "4.2.1",
 		"react-native-safe-area-context": "~5.6.2",
 		"react-native-screens": "~4.23.0",
+		"react-native-sse": "^1.2.1",
 		"react-native-web": "~0.21.0",
 		"react-native-webview": "13.16.0",
 		"react-native-worklets": "0.7.2",
@@ -82,5 +84,5 @@
 	"overrides": {
 		"lightningcss": "1.30.1"
 	},
-	"packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be"
+	"packageManager": "bun@1.3.10"
 }

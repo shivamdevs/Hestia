@@ -1,56 +1,130 @@
 import { ENV } from "@/constants/env";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import {
+	GoogleSignin,
+	isCancelledResponse,
+	isErrorWithCode,
+	isSuccessResponse,
+	statusCodes,
+} from "@react-native-google-signin/google-signin";
 import React from "react";
-import { hydratePbAuthStore, pb, PB_COLLECTIONS } from "../main";
+import { hydratePbAuthStore, pb } from "../main";
+import { formatAuthError } from "./formatter";
 
-let isGoogleConfigured = false;
+export type OAuthProvider = "google";
 
-function ensureGoogleConfigured() {
-	if (isGoogleConfigured) return;
+let isGoogleSigninConfigured = false;
+
+function ensureGoogleSigninConfigured() {
+	if (isGoogleSigninConfigured) {
+		return;
+	}
 
 	if (!ENV.googleSigninWebClientId) {
 		throw new Error(
-			"Missing EXPO_PUBLIC_GOOGLE_SIGNIN_WEB_CLIENT_ID. Add it to your environment and rebuild.",
+			"Missing EXPO_PUBLIC_GOOGLE_SIGNIN_WEB_CLIENT_ID. Set it to your Google OAuth Web Client ID.",
+		);
+	}
+
+	if (!ENV.backendUrl) {
+		throw new Error(
+			"Missing EXPO_PUBLIC_BACKEND_URL. Set it to your Hestia backend base URL.",
 		);
 	}
 
 	GoogleSignin.configure({
 		webClientId: ENV.googleSigninWebClientId,
+		offlineAccess: true,
 	});
 
-	isGoogleConfigured = true;
+	isGoogleSigninConfigured = true;
 }
 
 const handleGoogleLogin = async () => {
 	try {
-		ensureGoogleConfigured();
 		await hydratePbAuthStore();
+		ensureGoogleSigninConfigured();
 
-		// 1. Trigger Native Google Login
-		await GoogleSignin.hasPlayServices();
-		const signInData = await GoogleSignin.signIn();
+		const signInResponse = await GoogleSignin.signIn();
 
-		if (signInData.type === "success") {
-		} else if (signInData.type === "cancelled") {
-			throw new Error("Google Sign-In cancelled by user");
+		if (isCancelledResponse(signInResponse)) {
+			throw new Error("Google sign-in was cancelled.");
 		}
 
-		const { idToken } = await GoogleSignin.getTokens();
+		if (!isSuccessResponse(signInResponse)) {
+			throw new Error("Google sign-in failed to complete.");
+		}
 
-		const authData = await pb.collection(PB_COLLECTIONS.USERS)
-			.authWithOAuth2({
-				provider: "google",
-				token: idToken,
-			});
+		const serverAuthCode = signInResponse.data.serverAuthCode;
+		let idToken = signInResponse.data.idToken;
 
-		console.log("Logged in as:", authData.record.username);
+		if (!idToken) {
+			const tokens = await GoogleSignin.getTokens();
+			idToken = tokens.idToken;
+		}
+
+		if (!idToken) {
+			throw new Error("Google sign-in did not provide an idToken.");
+		}
+
+		const provider: OAuthProvider = "google";
+
+		const response = await fetch(
+			`${ENV.backendUrl}/auth/native/${provider}`,
+			{
+				method: "POST",
+				headers: {
+					"content-type": "application/json",
+				},
+				body: JSON.stringify({
+					idToken,
+					serverAuthCode,
+				}),
+			},
+		);
+
+		const authData = await response.json() as {
+			token: string;
+			record: {
+				id: string;
+				collectionId: string;
+				collectionName: string;
+				email?: string;
+				name?: string;
+				[key: string]: unknown;
+			};
+			error?: string;
+		};
+
+		if (!response.ok) {
+			throw new Error(
+				authData.error ??
+					"Backend native Google authentication failed.",
+			);
+		}
+
+		pb.authStore.save(authData.token, authData.record);
+
+		const userIdentifier = authData.record.email ?? authData.record.id ??
+			authData.record.name ?? "(unknown user)";
+		console.log("Logged in as:", userIdentifier);
 	} catch (error) {
-		console.error("Auth Error:", error);
-		throw error;
+		if (
+			isErrorWithCode(error) &&
+			error.code === statusCodes.SIGN_IN_CANCELLED
+		) {
+			throw new Error("Google sign-in was cancelled.");
+		}
+
+		console.error("Auth Error:", {
+			error,
+			originalError: (error as { originalError?: unknown })
+				?.originalError,
+			response: (error as { response?: unknown })?.response,
+		});
+
+		throw new Error(formatAuthError(error));
 	}
 };
-
-export type OAuthProvider = "google";
 
 export type AuthHandler = {
 	isLoading: boolean;
@@ -70,7 +144,7 @@ export function useAuthHandler(): AuthHandler {
 			if (provider === "google") {
 				await handleGoogleLogin();
 			} else {
-				throw new Error("Unsupported provider");
+				throw new Error(`Unsupported OAuth provider: ${provider}`);
 			}
 		} catch (err) {
 			setError((err as Error).message);

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 export default function WelcomeLayout() {
 	const { t } = useTranslation();
+
 	return (
 		<Stack>
 			<Stack.Screen

@@ -1,15 +1,16 @@
 import { ENV } from "@/constants/env";
 import { STORAGE_KEYS } from "@/constants/storage";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import type { RecordModel } from "pocketbase";
 import PocketBase, { AsyncAuthStore } from "pocketbase";
+import { Storage } from "../storage";
 
 const store = new AsyncAuthStore({
 	save: async (serialized) =>
-		AsyncStorage.setItem(STORAGE_KEYS.USER_TOKEN, serialized),
-	clear: async () => AsyncStorage.removeItem(STORAGE_KEYS.USER_TOKEN),
+		Storage.setItem(STORAGE_KEYS.USER_TOKEN, serialized),
+	clear: async () => Storage.removeItem(STORAGE_KEYS.USER_TOKEN),
 });
 
-const pb = new PocketBase(ENV.pocketbaseUrl, store);
+const pb = new PocketBase(ENV.pocketBaseUrl, store);
 
 pb.autoCancellation(false);
 
@@ -21,11 +22,27 @@ export async function hydratePbAuthStore() {
 
 	if (!authHydrationPromise) {
 		authHydrationPromise = (async () => {
-			const serialized = await AsyncStorage.getItem(
+			const serialized = await Storage.getItem(
 				STORAGE_KEYS.USER_TOKEN,
 			);
 			if (serialized) {
-				pb.authStore.save(serialized);
+				try {
+					const parsed = JSON.parse(serialized) as {
+						token?: string;
+						record?: unknown;
+						model?: unknown;
+					};
+
+					pb.authStore.save(
+						parsed.token ?? "",
+						((parsed.record ?? parsed.model) as
+							| RecordModel
+							| null) ??
+							null,
+					);
+				} catch {
+					pb.authStore.clear();
+				}
 			}
 			isAuthHydrated = true;
 		})();

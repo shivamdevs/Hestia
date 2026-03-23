@@ -38,6 +38,7 @@ export default function WelcomePage() {
 					size="lg"
 					className="mt-8"
 					href="./language"
+					carryParams
 				>
 					<Text>Get Started</Text>
 				</Button>

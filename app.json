@@ -18,7 +18,12 @@
 			"package": "com.shivamdevs.hestia",
 			"googleServicesFile": "./google-services.json",
 			"softwareKeyboardLayoutMode": "resize",
-			"icon": "./assets/images/adaptive-icon.png",
+			"icon": "./assets/images/icon.png",
+			"adaptiveIcon": {
+				"foregroundImage": "./assets/images/android-icon-foreground.png",
+				"monochromeImage": "./assets/images/android-icon-monochrome.png",
+				"backgroundColor": "#008080"
+			},
 			"predictiveBackGestureEnabled": false
 		},
 		"web": {
@@ -39,7 +44,12 @@
 				{
 					"backgroundColor": "#FFFFFF",
 					"image": "./assets/images/splash-icon.png",
-					"imageWidth": 256
+					"imageWidth": 256,
+					"dark": {
+						"backgroundColor": "#000000",
+						"image": "./assets/images/splash-icon-dark.png",
+						"imageWidth": 256
+					}
 				}
 			]
 		],

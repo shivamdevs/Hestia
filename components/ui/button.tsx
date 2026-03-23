@@ -2,7 +2,7 @@ import { TextClassContext } from "@/components/ui/text";
 import { useThemeDark } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
-import { Href, UnknownOutputParams, useRouter } from "expo-router";
+import { Href, UnknownOutputParams, useGlobalSearchParams, useRouter } from "expo-router";
 import { Platform, Pressable } from "react-native";
 
 const buttonVariants = cva(
@@ -142,17 +142,20 @@ type ButtonProps =
 					name: string,
 					params: UnknownOutputParams,
 				) => string | undefined);
-			replace?: boolean;
-		};
+			};
+		replace?: boolean;
+		carryParams?: boolean;
 	};
 
 function Button(
-	{ className, variant, size, href, navigationOptions, ...props }:
+	{ className, variant, size, href, replace, carryParams, navigationOptions, ...props }:
 		ButtonProps,
 ) {
 	const isDark = useThemeDark();
 	const resolvedVariant = variant ?? "default";
 	const mode = isDark ? "dark" : "light";
+		const searchParams = useGlobalSearchParams();
+	
 
 	const router = useRouter();
 
@@ -177,9 +180,16 @@ function Button(
 					className,
 				)}
 				onPress={() => {
-					const { replace, ...opts } = navigationOptions ?? {};
 					if (href) {
-						router[replace ? "replace" : "push"](href, opts);
+						const { ...opts } = navigationOptions ?? {};
+
+						let hrefObj: Href = typeof href === "string" ? { pathname: href } as Href : href;
+
+						if (carryParams && typeof hrefObj === "object") {
+							hrefObj.params = { ...hrefObj.params, ...searchParams };
+						}
+
+						router[replace ? "replace" : "push"](hrefObj, opts);
 						return;
 					}
 				}}
@@ -192,3 +202,4 @@ function Button(
 
 export { Button, buttonTextVariants, buttonVariants };
 export type { ButtonProps };
+

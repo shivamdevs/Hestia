@@ -1,5 +1,10 @@
-import { Redirect } from "expo-router";
+import { Text } from "@/components/ui/text";
+import { View } from "react-native";
 
 export default function Index() {
-	return <Redirect href="/(welcome)" />;
+	return (
+		<View className="flex-1 items-center justify-center">
+			<Text>Loading...</Text>
+		</View>
+	);
 }

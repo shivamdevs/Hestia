@@ -44,6 +44,7 @@ export default function LanguagePage() {
 				size="lg"
 				className="mt-8"
 				href="./login"
+				carryParams
 			>
 				<Text>
 					{t("welcome.language.button")}
