@@ -1,21 +1,24 @@
-import { LucideIcon } from "lucide-react-native";
+import { IMAGES } from "@/constants/images";
 import { i18nResources } from "./index";
 
 export type AppLanguageListItem = {
-	icon: LucideIcon | string;
+	icon: string;
 	code: keyof typeof i18nResources;
-	name: string;
+	title: string;
+	subtitle: string;
 };
 
 export const APP_LANGUAGES_LIST: AppLanguageListItem[] = [
 	{
-		icon: "EN",
+		icon: IMAGES.languages.enUS,
 		code: "en-US",
-		name: "English",
+		title: "English",
+		subtitle: "English",
 	},
 	{
-		icon: "HI",
+		icon: IMAGES.languages.enIn,
 		code: "en-IN",
-		name: "हिंदी",
+		title: "Hindi",
+		subtitle: "हिंदी",
 	},
 ];

@@ -1,52 +1,52 @@
-import { useThemeDark } from "@/hooks/use-theme";
+import { useThemeColors, useThemeDark } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
-import { Platform, TextInput, type TextInputProps } from "react-native";
+import React, { useState } from "react";
+import { Platform, TextInput, View, type TextInputProps } from "react-native";
 
-function Input(
-	{ className, placeholderClassName, style, ...props }:
-		& TextInputProps
-		& React.RefAttributes<TextInput>,
-) {
-	const isDark = useThemeDark();
+interface InputProps extends TextInputProps {
+	containerClassName?: string;
+}
+
+function Input({ className, containerClassName, onFocus, onBlur, style, ...props }: InputProps) {
+	const [isFocused, setIsFocused] = useState(false);
+	const colors = useThemeColors();
 
 	return (
-		<TextInput
+		<View
 			className={cn(
-				"flex h-14 w-full min-w-0 flex-row items-center rounded-xl border px-4 py-2 text-lg leading-6 shadow-sm",
-				isDark
-					? "border-zinc-700 bg-zinc-900 text-zinc-50 shadow-black/25"
-					: "border-zinc-300 bg-white text-zinc-900 shadow-black/10",
-				props.editable === false &&
-					cn(
-						"opacity-50",
-						Platform.select({
-							web: "disabled:pointer-events-none disabled:cursor-not-allowed",
-						}),
-					),
-				Platform.select({
-					web: cn(
-						"outline-none transition-[color,box-shadow]",
-						isDark
-							? "placeholder:text-zinc-400 selection:bg-emerald-600 selection:text-white focus-visible:border-zinc-500 focus-visible:ring-zinc-500/40"
-							: "placeholder:text-zinc-500 selection:bg-emerald-700 selection:text-white focus-visible:border-zinc-300 focus-visible:ring-zinc-300/70",
-						"focus-visible:ring-[3px] aria-invalid:border-red-500 aria-invalid:ring-red-500/30",
-					),
-					native: isDark
-						? "placeholder:text-zinc-400"
-						: "placeholder:text-zinc-500",
-				}),
-				className,
+				"relative flex h-14 w-full flex-row items-center rounded-xl overflow-hidden px-4",
+				containerClassName
 			)}
-			placeholderClassName={cn(
-				"pl-4",
-				isDark
-					? "placeholder:text-zinc-400"
-					: "placeholder:text-zinc-500",
-				placeholderClassName,
+			style={{ backgroundColor: isFocused ? colors.surfaceContainerHighest : colors.surfaceContainerLow }}
+		>
+			{isFocused && (
+				<View 
+					className="absolute left-0 top-3 bottom-3 w-[2px] rounded-full" 
+					style={{ backgroundColor: colors.primary }}
+				/>
 			)}
-			style={[{ paddingHorizontal: 16 }, style]}
-			{...props}
-		/>
+			<TextInput
+				className={cn(
+					"flex-1 text-[16px] leading-6 font-inter",
+					Platform.select({
+						web: "outline-none",
+					}),
+					className
+				)}
+				placeholderTextColor={colors.onSurfaceVariant}
+				style={[{ color: colors.onSurface }, style]}
+				onFocus={(e) => {
+					setIsFocused(true);
+					onFocus?.(e);
+				}}
+				onBlur={(e) => {
+					setIsFocused(false);
+					onBlur?.(e);
+				}}
+				underlineColorAndroid="transparent"
+				{...props}
+			/>
+		</View>
 	);
 }
 

@@ -1,16 +1,27 @@
 {
 	"welcome": {
 		"language": {
-			"title": "Choose your language",
-			"description": "Select the language you want to use in the app.",
+			"title": "Select Your Language",
+			"description": "Choose your preferred language for a better experience.",
 			"button": "Continue",
 			"comment": "More languages coming soon!"
 		},
 		"login": {
 			"title": "Connect your account",
+			"description": "Access your concierge services with a single secure tap.",
 			"oauth": {
 				"google": "Continue with Google"
-			}
+			},
+			"comment": "By signing in, you agree to our <0>Terms of Service</0> and <1>Privacy Policy</1>."
+		}
+	},
+	"onboarding": {
+		"notification": {
+			"title": "Stay in the Loop",
+			"description": "Get instant alerts about your shifts and client messages.",
+			"button": "Allow Notifications",
+			"skip": "Not Now",
+			"comment": "You can change these settings at any time in the <strong>Profile Settings</strong>."
 		}
 	}
 }

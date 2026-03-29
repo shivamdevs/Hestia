@@ -1,4 +1,4 @@
-import { useThemeDark } from "@/hooks/use-theme";
+import { useThemeColors } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
 import * as Slot from "@rn-primitives/slot";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -7,7 +7,7 @@ import { Platform, type Role, Text as RNText } from "react-native";
 
 const textVariants = cva(
 	cn(
-		"text-base",
+		"text-base font-inter",
 		Platform.select({
 			web: "select-text",
 		}),
@@ -15,59 +15,32 @@ const textVariants = cva(
 	{
 		variants: {
 			variant: {
-				default: "",
-				destructive: "font-semibold",
-				h1: cn(
-					"text-center text-4xl font-bold tracking-tight",
-					Platform.select({ web: "scroll-m-20 text-balance" }),
-				),
-				h2: cn(
-					"pb-2 text-3xl font-semibold tracking-tight",
-					Platform.select({ web: "scroll-m-20 first:mt-0" }),
-				),
-				h3: cn(
-					"text-2xl font-semibold tracking-tight leading-8",
-					Platform.select({ web: "scroll-m-20" }),
-				),
-				h4: cn(
-					"text-xl font-semibold tracking-tight leading-7",
-					Platform.select({ web: "scroll-m-20" }),
-				),
-				p: "mt-4 leading-8",
-				blockquote: "mt-5 border-l-2 pl-4 italic",
-				code: cn(
-					"relative rounded-md px-2 py-1 font-mono text-sm font-semibold",
-				),
-				lead: "text-xl leading-8",
-				large: "text-xl font-semibold",
-				small: "text-base font-medium leading-6",
-				muted: "text-base",
+				default: "text-[16px] leading-6",
+				display: "font-manrope text-4xl font-bold tracking-tight",
+				headline: "font-manrope text-2xl font-bold tracking-tight",
+				title: "font-inter text-[22px] font-semibold leading-7",
+				body: "font-inter text-[16px] leading-6",
+				label: "font-inter text-[14px] font-medium leading-5",
+				destructive: "text-[16px] font-semibold",
+			},
+			muted: {
+				true: "opacity-60",
+				false: "",
 			},
 		},
 		defaultVariants: {
 			variant: "default",
+			muted: false,
 		},
 	},
 );
 
 type TextVariantProps = VariantProps<typeof textVariants>;
 
-type TextVariant = NonNullable<TextVariantProps["variant"]>;
-
-const ROLE: Partial<Record<TextVariant, Role>> = {
-	h1: "heading",
-	h2: "heading",
-	h3: "heading",
-	h4: "heading",
-	blockquote: Platform.select({ web: "blockquote" as Role }),
-	code: Platform.select({ web: "code" as Role }),
-};
-
-const ARIA_LEVEL: Partial<Record<TextVariant, string>> = {
-	h1: "1",
-	h2: "2",
-	h3: "3",
-	h4: "4",
+const ROLE: Partial<Record<string, Role>> = {
+	display: "heading",
+	headline: "heading",
+	title: "heading",
 };
 
 const TextClassContext = React.createContext<string | undefined>(undefined);
@@ -76,6 +49,8 @@ function Text({
 	className,
 	asChild = false,
 	variant = "default",
+	muted = false,
+	style,
 	...props
 }:
 	& React.ComponentProps<typeof RNText>
@@ -84,56 +59,28 @@ function Text({
 	& {
 		asChild?: boolean;
 	}) {
-	const isDark = useThemeDark();
+	const colors = useThemeColors();
 	const textClass = React.useContext(TextClassContext);
 	const Component = asChild ? Slot.Text : RNText;
 
-	const toneClass = React.useMemo(() => {
-		switch (variant) {
-			case "destructive":
-				return isDark ? "text-red-400" : "text-red-600";
-			case "lead":
-			case "muted":
-				return isDark ? "text-zinc-400" : "text-zinc-600";
-			case "code":
-				return isDark
-					? "bg-zinc-800 text-zinc-100"
-					: "bg-zinc-100 text-zinc-900";
-			case "blockquote":
-				return isDark
-					? "border-zinc-600 text-zinc-200"
-					: "border-zinc-300 text-zinc-800";
-			case "h1":
-			case "h2":
-			case "h3":
-			case "h4":
-			case "large":
-			case "small":
-			case "p":
-			case "default":
-			default:
-				return isDark ? "text-zinc-50" : "text-zinc-900";
-		}
-	}, [isDark, variant]);
-
-	const headingBorderClass = variant === "h2"
-		? (isDark ? "border-zinc-700" : "border-zinc-300")
-		: "";
+	const color = React.useMemo(() => {
+		if (variant === "destructive") return colors.primary; // Red fallback
+		if (muted || variant === "muted" as any) return colors.onSurfaceVariant;
+		return colors.onSurface;
+	}, [colors, variant, muted]);
 
 	return (
 		<Component
 			className={cn(
-				textVariants({ variant }),
+				textVariants({ variant, muted }),
 				textClass,
-				toneClass,
-				headingBorderClass,
 				className,
 			)}
-			role={variant ? ROLE[variant] : undefined}
-			aria-level={variant ? ARIA_LEVEL[variant] : undefined}
+			style={[{ color }, style]}
+			role={variant ? ROLE[variant as string] : undefined}
 			{...props}
 		/>
 	);
 }
 
-export { Text, TextClassContext };
+export { Text, TextClassContext, textVariants };

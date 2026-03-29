@@ -16,13 +16,15 @@ export default function WelcomeLayout() {
 			<Stack.Screen
 				name="language"
 				options={{
-					headerTitle: t("welcome.language.title"),
+					headerTitle: "",
+					headerTransparent: true,
 				}}
 			/>
 			<Stack.Screen
 				name="login"
 				options={{
-					headerTitle: t("welcome.login.title"),
+					headerTitle: "",
+					headerTransparent: true,
 				}}
 			/>
 		</Stack>

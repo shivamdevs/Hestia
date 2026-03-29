@@ -1,13 +1,20 @@
-import { TextClassContext } from "@/components/ui/text";
-import { useThemeDark } from "@/hooks/use-theme";
+import { Text as AppText, TextClassContext } from "@/components/ui/text";
+import { useThemeColors, useThemeDark } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
-import { Href, UnknownOutputParams, useGlobalSearchParams, useRouter } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+import {
+	Href,
+	UnknownOutputParams,
+	useGlobalSearchParams,
+	useRouter,
+} from "expo-router";
+import React from "react";
 import { Platform, Pressable } from "react-native";
 
 const buttonVariants = cva(
 	cn(
-		"group shrink-0 flex-row items-center justify-center gap-2 rounded-xl shadow-none",
+		"group shrink-0 flex-row items-center justify-center gap-2 rounded-full shadow-none overflow-hidden",
 		Platform.select({
 			web: "whitespace-nowrap outline-none transition-all focus-visible:ring-[3px] disabled:pointer-events-none [&_svg:not([class*='size-'])]:size-5 [&_svg]:pointer-events-none [&_svg]:shrink-0",
 		}),
@@ -23,18 +30,9 @@ const buttonVariants = cva(
 				link: "",
 			},
 			size: {
-				default: cn(
-					"h-14 px-6 py-3",
-					Platform.select({ web: "has-[>svg]:px-5" }),
-				),
-				sm: cn(
-					"h-12 gap-1.5 rounded-lg px-4",
-					Platform.select({ web: "has-[>svg]:px-3.5" }),
-				),
-				lg: cn(
-					"h-16 rounded-xl px-7",
-					Platform.select({ web: "has-[>svg]:px-6" }),
-				),
+				default: "h-14 px-6 py-3", // 56px per spec
+				sm: "h-12 gap-1.5 rounded-full px-4",
+				lg: "h-16 rounded-full px-7",
 				icon: "h-14 w-14",
 			},
 			mode: {
@@ -52,7 +50,7 @@ const buttonVariants = cva(
 
 const buttonTextVariants = cva(
 	cn(
-		"text-base font-semibold",
+		"text-base font-bold font-manrope", // title-md style
 		Platform.select({ web: "pointer-events-none transition-colors" }),
 	),
 	{
@@ -63,15 +61,14 @@ const buttonTextVariants = cva(
 				outline: "",
 				secondary: "",
 				ghost: "",
-				link: Platform.select({
-					web: "underline-offset-4 hover:underline group-hover:underline",
-				}),
+				link:
+					"underline-offset-4 hover:underline group-hover:underline",
 			},
 			size: {
-				default: "",
-				sm: "",
-				lg: "text-lg",
-				icon: "text-lg",
+				default: "text-[16px]", // 16px minimum rule
+				sm: "text-[14px]",
+				lg: "text-[18px]",
+				icon: "text-[18px]",
 			},
 			mode: {
 				light: "",
@@ -86,52 +83,32 @@ const buttonTextVariants = cva(
 	},
 );
 
-function buttonTone(variant: ButtonProps["variant"], isDark: boolean) {
-	switch (variant) {
-		case "destructive":
-			return isDark
-				? "bg-red-700 active:bg-red-800 border-red-600 shadow-sm shadow-black/30"
-				: "bg-red-600 active:bg-red-700 border-red-500 shadow-sm shadow-black/10";
-		case "outline":
-			return isDark
-				? "border-zinc-700 bg-zinc-900 active:bg-zinc-800"
-				: "border-zinc-300 bg-white active:bg-zinc-100";
-		case "secondary":
-			return isDark
-				? "bg-zinc-700 active:bg-zinc-600 shadow-sm shadow-black/30"
-				: "bg-zinc-200 active:bg-zinc-300 shadow-sm shadow-black/10";
-		case "ghost":
-			return isDark ? "active:bg-zinc-800" : "active:bg-zinc-100";
-		case "link":
-			return "bg-transparent";
-		case "default":
-		default:
-			return isDark
-				? "bg-emerald-600 active:bg-emerald-700 shadow-sm shadow-black/30"
-				: "bg-emerald-700 active:bg-emerald-800 shadow-sm shadow-black/10";
+function ButtonContent({ variant, colors }: { variant: string; colors: any }) {
+	if (variant === "default") {
+		return (
+			<LinearGradient
+				colors={[colors.primary, colors.primaryContainer]}
+				start={{ x: 0, y: 0 }}
+				end={{ x: 1, y: 1 }}
+				style={{
+					position: "absolute",
+					top: 0,
+					left: 0,
+					right: 0,
+					bottom: 0,
+				}}
+			/>
+		);
 	}
-}
-
-function buttonTextTone(variant: ButtonProps["variant"], isDark: boolean) {
-	switch (variant) {
-		case "outline":
-		case "secondary":
-		case "ghost":
-			return isDark ? "text-zinc-100" : "text-zinc-900";
-		case "link":
-			return isDark ? "text-emerald-400" : "text-emerald-700";
-		case "destructive":
-		case "default":
-		default:
-			return "text-white";
-	}
+	return null;
 }
 
 type ButtonProps =
-	& React.ComponentProps<typeof Pressable>
+	& Omit<React.ComponentProps<typeof Pressable>, "children">
 	& React.RefAttributes<typeof Pressable>
 	& VariantProps<typeof buttonVariants>
 	& {
+		children?: React.ReactNode;
 		href?: Href;
 		navigationOptions?: {
 			relativeToDirectory?: boolean;
@@ -142,64 +119,101 @@ type ButtonProps =
 					name: string,
 					params: UnknownOutputParams,
 				) => string | undefined);
-			};
+		};
 		replace?: boolean;
 		carryParams?: boolean;
 	};
 
 function Button(
-	{ className, variant, size, href, replace, carryParams, navigationOptions, ...props }:
-		ButtonProps,
+	{
+		className,
+		variant,
+		size,
+		href,
+		replace,
+		carryParams,
+		navigationOptions,
+		children,
+		style,
+		...props
+	}: ButtonProps,
 ) {
+	const colors = useThemeColors();
 	const isDark = useThemeDark();
 	const resolvedVariant = variant ?? "default";
 	const mode = isDark ? "dark" : "light";
-		const searchParams = useGlobalSearchParams();
-	
-
+	const searchParams = useGlobalSearchParams();
 	const router = useRouter();
 
+	const backgroundColor = React.useMemo(() => {
+		if (resolvedVariant === "default") return "transparent";
+		if (resolvedVariant === "secondary") {
+			return colors.surfaceContainerHighest;
+		}
+		if (resolvedVariant === "destructive") {
+			return isDark ? "#b91c1c" : "#dc2626";
+		}
+		return "transparent";
+	}, [resolvedVariant, colors, isDark]);
+
+	const borderColor = React.useMemo(() => {
+		if (resolvedVariant === "outline") return colors.outlineVariant;
+		return "transparent";
+	}, [resolvedVariant, colors]);
+
+	const textColor = React.useMemo(() => {
+		if (
+			resolvedVariant === "default" || resolvedVariant === "destructive"
+		) return "white";
+		if (resolvedVariant === "outline") return colors.onSurface;
+		return colors.primary;
+	}, [resolvedVariant, colors]);
+
 	return (
-		<TextClassContext.Provider
-			value={cn(
-				buttonTextVariants({ variant: resolvedVariant, size, mode }),
-				buttonTextTone(resolvedVariant, isDark),
+		<Pressable
+			className={cn(
+				props.disabled && "opacity-50",
+				buttonVariants({ variant: resolvedVariant, size, mode }),
+				className,
 			)}
-		>
-			<Pressable
-				className={cn(
-					props.disabled && "opacity-50",
-					buttonVariants({ variant: resolvedVariant, size, mode }),
-					buttonTone(resolvedVariant, isDark),
-					Platform.select({
-						web: isDark
-							? "focus-visible:ring-zinc-500/50"
-							: "focus-visible:ring-zinc-300/70",
-					}),
-					"rounded-full",
-					className,
-				)}
-				onPress={() => {
-					if (href) {
-						const { ...opts } = navigationOptions ?? {};
-
-						let hrefObj: Href = typeof href === "string" ? { pathname: href } as Href : href;
-
-						if (carryParams && typeof hrefObj === "object") {
-							hrefObj.params = { ...hrefObj.params, ...searchParams };
-						}
-
-						router[replace ? "replace" : "push"](hrefObj, opts);
-						return;
+			style={[{ backgroundColor, borderColor }, style as any]}
+			onPress={(e) => {
+				if (href) {
+					const { ...opts } = navigationOptions ?? {};
+					let hrefObj: Href = typeof href === "string"
+						? { pathname: href } as Href
+						: href;
+					if (carryParams && typeof hrefObj === "object") {
+						hrefObj.params = {
+							...hrefObj.params,
+							...searchParams,
+						} as any;
 					}
-				}}
-				role="button"
-				{...props}
-			/>
-		</TextClassContext.Provider>
+					router[replace ? "replace" : "push"](hrefObj, opts);
+					return;
+				}
+				props.onPress?.(e);
+			}}
+			role="button"
+			{...props}
+		>
+			<ButtonContent variant={resolvedVariant} colors={colors} />
+			<TextClassContext.Provider
+				value={cn(
+					buttonTextVariants({
+						variant: resolvedVariant,
+						size,
+						mode,
+					}),
+				)}
+			>
+				{typeof children === "string"
+					? <AppText style={{ color: textColor }}>{children}</AppText>
+					: children}
+			</TextClassContext.Provider>
+		</Pressable>
 	);
 }
 
 export { Button, buttonTextVariants, buttonVariants };
 export type { ButtonProps };
-

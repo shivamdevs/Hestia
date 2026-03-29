@@ -58,13 +58,24 @@ export function SessionProvider({ children }: React.PropsWithChildren) {
 		let isMounted = true;
 
 		const init = async () => {
+			console.log("SessionProvider: initializing", {
+				currentHydrated: hasHydratedPbAuthStore(),
+			});
 			if (!hasHydratedPbAuthStore()) {
 				await hydratePbAuthStore();
 			}
 
 			if (isMounted) {
-				setToken(pb.authStore.token);
-				setUser(sanitizeUserRecord(pb.authStore.record as RecordModel));
+				const newToken = pb.authStore.token;
+				const newUser = sanitizeUserRecord(
+					pb.authStore.record as RecordModel,
+				);
+				console.log("SessionProvider: hydrated", {
+					hasToken: !!newToken,
+					hasUser: !!newUser,
+				});
+				setToken(newToken);
+				setUser(newUser);
 				setIsReady(true);
 			}
 		};

@@ -10,28 +10,27 @@ export const Colors = AppColors;
 
 export const Fonts = Platform.select({
   ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: "system-ui",
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: "ui-serif",
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: "ui-rounded",
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
+    sans: "Inter-Regular",
+    display: "Manrope-Bold",
+    heading: "Manrope-SemiBold",
     mono: "ui-monospace",
   },
+  android: {
+    sans: "Inter_400Regular",
+    display: "Manrope_700Bold",
+    heading: "Manrope_600SemiBold",
+    mono: "monospace",
+  },
   default: {
-    sans: "normal",
-    serif: "serif",
-    rounded: "normal",
+    sans: "Inter_400Regular",
+    display: "Manrope_700Bold",
+    heading: "Manrope_600SemiBold",
     mono: "monospace",
   },
   web: {
-    sans:
-      "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded:
-      "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono:
-      "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+    sans: "'Inter', system-ui, sans-serif",
+    display: "'Manrope', system-ui, sans-serif",
+    heading: "'Manrope', system-ui, sans-serif",
+    mono: "SFMono-Regular, Menlo, Monaco, Consolas, monospace",
   },
 });

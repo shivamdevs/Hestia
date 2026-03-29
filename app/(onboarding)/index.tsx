@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
-import Icon from "@/components/ui/icon";
+import { SafeView } from "@/components/ui/safe-view";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Text } from "@/components/ui/text";
+import { useThemeColors } from "@/hooks/use-theme";
 import { usePushNotificationHandler } from "@/lib/hooks/use-push-notifications";
-import { Image } from "expo-image";
 import { Redirect } from "expo-router";
-import { LucideBellRing, LucideLoaderCircle } from "lucide-react-native";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 
 export default function OnboardingScreen() {
@@ -16,68 +17,130 @@ export default function OnboardingScreen() {
 		error,
 		askForPermission,
 	} = usePushNotificationHandler();
+	const colors = useThemeColors();
+	const { t } = useTranslation();
 
 	if (!isLoading && isAlreadySet) {
 		return <Redirect href="./profile" />;
 	}
 
 	return (
-		<View className="flex-1 gap-8 p-8">
-			<View className="flex-1 justify-center items-center gap-6">
-				<Image
-					source={{
-						uri: "https://cdn-icons-png.flaticon.com/512/6302/6302741.png",
-					}}
-					style={{
-						width: 128,
-						height: 128,
-						backgroundColor: "#EFEFEFCE",
-						borderRadius: 32,
-					}}
-				/>
-				<Text className="text-3xl font-bold text-center">
-					Stay in the loop!
-				</Text>
-				<Text className="text-lg text-center opacity-60">
-					Notifications help you stay updated with the latest alerts
-					and updates.
-				</Text>
+		<SafeView className="flex-1">
+			<View className="flex-1 pt-16">
+				<View className="px-8 pb-4">
+					<Text
+						variant="display"
+						className="text-left mb-2 text-3xl"
+					>
+						{t("welcome.language.title")}
+					</Text>
+					<Text variant="body" muted>
+						{t("welcome.language.description")}
+					</Text>
+				</View>
+				<ScrollArea
+					showsVerticalScrollIndicator={false}
+					contentContainerStyle={{ flexGrow: 1 }}
+				>
+					<View className="flex-1 gap-4 px-8 my-10">
+					</View>
+					<Text variant="body" muted className="px-8">
+						{t("welcome.language.comment")}
+					</Text>
+				</ScrollArea>
 			</View>
-
-			<Text className="text-center text-lg text-emerald-500">
-				{isAllowed
-					? "Thanks! You're all set."
-					: (error ? String(error) : "")}
-			</Text>
-
-			{isAllowed
-				? (
-					<Button
-						size="lg"
-						className="w-full mt-4"
-						href="./profile"
-						replace
-						carryParams
-					>
-						<Text>Continue</Text>
-					</Button>
-				)
-				: (
-					<Button
-						onPress={() => askForPermission()}
-						disabled={isLoading}
-						size="lg"
-						className="w-full mt-4"
-					>
-						<Icon
-							spin={isLoading}
-							icon={isLoading
-								? LucideLoaderCircle
-								: LucideBellRing}
-						/>
-						<Text>Enable Notifications</Text>
-					</Button>
-				)}
-		</View>
+			<Button
+				variant="default"
+				size="lg"
+				className="m-8 mt-4"
+				href="./login"
+				carryParams
+			>
+				<Text>
+					{t("welcome.language.button")}
+				</Text>
+			</Button>
+		</SafeView>
 	);
+
+	// return (
+	// 	<SafeView className="flex-1">
+	// 		<ScrollArea
+	// 			contentClassName="px-8 pt-24 pb-8 justify-between"
+	// 			showsVerticalScrollIndicator={false}
+	// 		>
+	// 			<View className="gap-8">
+	// 				<View
+	// 					className="w-32 h-32 rounded-[32px] overflow-hidden items-center justify-center p-6"
+	// 					style={{ backgroundColor: colors.surfaceContainerLow }}
+	// 				>
+	// 					<Image
+	// 						source={{
+	// 							uri: "https://cdn-icons-png.flaticon.com/512/6302/6302741.png",
+	// 						}}
+	// 						style={{
+	// 							width: "100%",
+	// 							height: "100%",
+	// 						}}
+	// 					/>
+	// 				</View>
+
+	// 				<View className="gap-4">
+	// 					<Text variant="display" className="text-left">
+	// 						Stay in the loop!
+	// 					</Text>
+	// 					<Text variant="body" muted>
+	// 						Notifications help you stay updated with the latest
+	// 						alerts and updates.
+	// 					</Text>
+	// 				</View>
+	// 			</View>
+
+	// 			<View className="gap-6 mt-12">
+	// 				{error && (
+	// 					<Text className="text-center text-red-500">
+	// 						{String(error)}
+	// 					</Text>
+	// 				)}
+
+	// 				{isAllowed
+	// 					? (
+	// 						<Button
+	// 							size="default"
+	// 							className="w-full"
+	// 							href="./profile"
+	// 							replace
+	// 							carryParams
+	// 						>
+	// 							Continue
+	// 						</Button>
+	// 					)
+	// 					: (
+	// 						<Button
+	// 							onPress={() => askForPermission()}
+	// 							disabled={isLoading}
+	// 							size="default"
+	// 							className="w-full"
+	// 						>
+	// 							<Icon
+	// 								spin={isLoading}
+	// 								icon={isLoading
+	// 									? LucideLoaderCircle
+	// 									: LucideBellRing}
+	// 							/>
+	// 							<Text>Enable Notifications</Text>
+	// 						</Button>
+	// 					)}
+	// 			</View>
+	// 			<Text muted className="text-center">
+	// 				<Trans
+	// 					i18nKey="onboarding.notification.comment"
+	// 					components={{
+	// 						strong: <Text className="font-semibold" />,
+	// 					}}
+	// 				/>
+	// 			</Text>
+	// 		</ScrollArea>
+	// 	</SafeView>
+	// );
 }

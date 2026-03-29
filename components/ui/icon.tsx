@@ -12,11 +12,9 @@ export type IconProps = React.ComponentProps<LucideIcon> & {
 };
 
 export default function Icon(
-	{ icon: IconComponent, color, size = 32, spin, ...props }: IconProps,
+	{ icon: IconComponent, color, size = 24, spin, ...props }: IconProps,
 ) {
 	const colors = useThemeColors();
-
-	const OFFSET_SIZE = 4;
 
 	if (typeof IconComponent === "string" && IconComponent.startsWith("http")) {
 		return (
@@ -26,7 +24,6 @@ export default function Icon(
 					height: size,
 					justifyContent: "center",
 					alignItems: "center",
-					padding: OFFSET_SIZE,
 				} as StyleProp<ViewStyle>}
 			>
 				<Image
@@ -37,8 +34,8 @@ export default function Icon(
 					contentFit="contain"
 					{...props}
 					style={{
-						width: (size - OFFSET_SIZE * 2) as DimensionValue,
-						height: (size - OFFSET_SIZE * 2) as DimensionValue,
+						width: size as DimensionValue,
+						height: size as DimensionValue,
 						...(props.style as StyleProp<ImageStyle>),
 					}}
 				/>
@@ -58,10 +55,13 @@ export default function Icon(
 				alignItems: "center",
 			} as StyleProp<ViewStyle>}
 		>
-			<IconComponent
-				color={color ?? (colors.text)}
-				{...props}
-			/>
+			{(IconComponent as any) && (
+				<IconComponent
+					color={color ?? (colors.onSurface)}
+					size={size}
+					{...props}
+				/>
+			)}
 		</View>
 	);
 }
